@@ -7,7 +7,8 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/preshitakoli-atoconn/wowcare-config-server.git
+          uri: git@github.com:preshitakoli-atoconn/wowcare-config-server.git
+          clone-on-start: true
 eureka:
   client:
     service-url:
