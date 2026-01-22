@@ -1,0 +1,11 @@
+# Environment-specific configuration for local development
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_GIT_URI:git@github.com:preshitakoli-atoconn/wowcare-configuration-service.git}
+          clone-on-start: true
+logging:
+  level:
+    root: DEBUG

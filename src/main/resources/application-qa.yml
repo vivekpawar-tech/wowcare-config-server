@@ -1,0 +1,12 @@
+# Environment-specific configuration for QA
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_GIT_URI:git@github.com:Atoconn-System-Labs-Private-Limited/wowcare-configuration-service.git}
+          clone-on-start: true
+logging:
+  level:
+    root: INFO
+

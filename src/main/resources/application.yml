@@ -1,11 +1,7 @@
 server:
   port: 8888
+
 spring:
   application:
     name: wowcare-config-server
-  cloud:
-    config:
-      server:
-        git:
-          uri: git@github.com:preshitakoli-atoconn/wowcare-configuration-service.git
-          clone-on-start: true
+
