@@ -1,0 +1,54 @@
+# ==============================================================================
+# WowCare Config Server - Docker Environment Configuration
+# ==============================================================================
+# This configuration is activated when SPRING_PROFILES_ACTIVE=docker
+
+config:
+  security:
+    enabled: true
+    cors:
+      enabled: true
+      allowed-origins:
+        - http://localhost:3000
+        - http://localhost:4200
+        - http://localhost:8080
+        - http://localhost:8761  # Eureka Dashboard
+
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_GIT_URI}
+          default-label: ${CONFIG_GIT_BRANCH:main}
+          clone-on-start: true
+          timeout: 30
+          search-paths: '{application}/{profile}'
+          force-pull: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8080/realms/wowcare}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8080/realms/wowcare/protocol/openid-connect/certs}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://service-registry:8761/eureka/}
+    register-with-eureka: ${EUREKA_REGISTER:true}
+    fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
+  instance:
+    hostname: config-server
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.config: INFO
+    org.springframework.security: INFO
+    com.atoconn: DEBUG
+  file:
+    name: /app/logs/wowcare-config-server.log

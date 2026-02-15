@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!-- Logstash/JSON encoder for ELK/Graylog -->
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <level>level</level>
+                <thread>thread</thread>
+                <logger>logger</logger>
+                <message>message</message>
+                <context>context</context>
+                <exception>exception</exception>
+            </fieldNames>
+            <customFields>{"service":"config-server"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- GELF appender for Graylog -->
+    <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
+        <graylogHost>${GRAYLOG_HOST:-localhost}</graylogHost>
+        <graylogPort>${GRAYLOG_PORT:-12201}</graylogPort>
+        <useCompression>true</useCompression>
+        <layout class="de.siegmar.logbackgelf.GelfLayout">
+            <originHost>config-server</originHost>
+            <includeRawMessage>false</includeRawMessage>
+            <includeMarker>true</includeMarker>
+            <includeMdcData>true</includeMdcData>
+            <includeCallerData>false</includeCallerData>
+            <includeRootCauseData>true</includeRootCauseData>
+            <includeLevelName>true</includeLevelName>
+            <shortPatternLayout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%m%nopex</pattern>
+            </shortPatternLayout>
+            <fullPatternLayout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%m%n</pattern>
+            </fullPatternLayout>
+            <staticField>service:config-server</staticField>
+        </layout>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="JSON"/>
+        <appender-ref ref="GELF"/>
+    </root>
+</configuration>

@@ -1,5 +1,5 @@
 # ==============================================================================
-# DEV Profile - For development environment
+# UAT Profile - For user acceptance testing environment
 # ==============================================================================
 
 server:
@@ -11,7 +11,7 @@ spring:
       server:
         git:
           uri: ${CONFIG_GIT_URI:git@github.com:Atoconn-System-Labs-Private-Limited/wowcare-configuration-service.git}
-          default-label: develop
+          default-label: uat
           clone-on-start: true
           timeout: 30
   
@@ -37,13 +37,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus,refresh
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: when-authorized
 
 logging:
   level:
-    root: INFO
-    org.springframework.cloud.config: DEBUG
-    com.atoconn: DEBUG
+    root: WARN
+    org.springframework.cloud.config: INFO
+    com.atoconn: INFO

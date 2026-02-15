@@ -1,11 +1,49 @@
-# Environment-specific configuration for local development
+# ==============================================================================
+# LOCAL Profile - For local development
+# ==============================================================================
+
+server:
+  port: 8888
+
 spring:
   cloud:
     config:
       server:
         git:
-          uri: ${CONFIG_GIT_URI:git@github.com:preshitakoli-atoconn/wowcare-configuration-service.git}
+          uri: ${CONFIG_GIT_URI:git@github.com:Atoconn-System-Labs-Private-Limited/wowcare-configuration-service.git}
+          default-label: main
           clone-on-start: true
+          timeout: 30
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/wowcare
+          jwk-set-uri: http://localhost:8080/realms/wowcare/protocol/openid-connect/certs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
 logging:
   level:
-    root: DEBUG
+    root: INFO
+    org.springframework.cloud.config: DEBUG
+    org.springframework.security: DEBUG
+    com.atoconn: DEBUG

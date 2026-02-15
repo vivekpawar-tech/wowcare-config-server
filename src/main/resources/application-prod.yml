@@ -1,11 +1,64 @@
-# Environment-specific configuration for production
+# ==============================================================================
+# PROD Profile - For production environment
+# ==============================================================================
+
+server:
+  port: ${SERVER_PORT:8888}
+
 spring:
   cloud:
     config:
       server:
         git:
-          uri: ${CONFIG_GIT_URI:git@github.com:preshitakoli-atoconn/wowcare-configuration-service.git}
+          uri: ${CONFIG_GIT_URI:git@github.com:Atoconn-System-Labs-Private-Limited/wowcare-configuration-service.git}
+          default-label: main
           clone-on-start: true
+          timeout: 30
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
+
+# ==============================================================================
+# PRODUCTION ENCRYPTION - Asymmetric (Public/Private Key)
+# ==============================================================================
+# Uses Java Keystore (JKS) with RSA-4096 key pair for maximum security
+# Keystore should be stored in AWS Secrets Manager or secure volume mount
+# Generate keystore: ./scripts/generate-keystore.sh prod
+# ==============================================================================
+encrypt:
+  key-store:
+    location: file:${KEYSTORE_PATH:/config/keystore/config-server-prod.jks}
+    password: ${KEYSTORE_PASSWORD}
+    alias: ${KEYSTORE_ALIAS:config-server-key}
+    secret: ${KEY_SECRET:${KEYSTORE_PASSWORD}}
+  fail-on-error: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${HOSTNAME}
+    prefer-ip-address: true
+    non-secure-port: ${SERVER_PORT:8888}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never
+
 logging:
   level:
-    root: INFO
+    root: ERROR
+    org.springframework.cloud.config: WARN
+    com.atoconn: INFO

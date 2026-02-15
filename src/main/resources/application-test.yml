@@ -1,0 +1,49 @@
+# ==============================================================================
+# TEST Profile - For encryption testing without Git backend
+# ==============================================================================
+
+server:
+  port: 8888
+
+config:
+  security:
+    enabled: false
+
+spring:
+  cloud:
+    config:
+      server:
+        # Use native file system instead of Git for testing
+        native:
+          search-locations: classpath:/config
+        # Disable Git backend for testing
+        git:
+          uri: file:///tmp/empty-config-repo
+          clone-on-start: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
+
+# Encryption configuration
+encrypt:
+  key: ${ENCRYPT_KEY:test-key-for-development-only-change-in-production}
+  fail-on-error: false  # Don't fail if encryption has issues during testing
+
+# Disable Eureka for standalone testing
+eureka:
+  client:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,encrypt,decrypt
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.config: DEBUG

@@ -1,12 +1,50 @@
-# Environment-specific configuration for QA
+# ==============================================================================
+# QA Profile - For quality assurance environment
+# ==============================================================================
+
+server:
+  port: ${SERVER_PORT:8888}
+
 spring:
   cloud:
     config:
       server:
         git:
           uri: ${CONFIG_GIT_URI:git@github.com:Atoconn-System-Labs-Private-Limited/wowcare-configuration-service.git}
+          default-label: qa
           clone-on-start: true
+          timeout: 30
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${HOSTNAME}
+    prefer-ip-address: true
+    non-secure-port: ${SERVER_PORT:8888}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,refresh
+  endpoint:
+    health:
+      show-details: when-authorized
+
 logging:
   level:
     root: INFO
+    org.springframework.cloud.config: INFO
+    com.atoconn: DEBUG
 

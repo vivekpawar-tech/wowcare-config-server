@@ -1,7 +1,218 @@
+# ==============================================================================
+# WowCare Config Server - Base Configuration
+# ==============================================================================
+
 server:
-  port: 8888
+  port: ${SERVER_PORT:8888}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
 
 spring:
   application:
     name: wowcare-config-server
+  
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_GIT_URI:git@github.com-atoconn:Atoconn-System-Labs-Private-Limited/wowcare-configuration-service.git}
+          default-label: ${CONFIG_GIT_BRANCH:main}
+          clone-on-start: false
+          timeout: 30
+          search-paths: '{application}/{profile}'
+          force-pull: true
+          skip-ssl-validation: true
+          strict-host-key-checking: false
+        health:
+          enabled: true
+          repositories:
+            wowcare-services:
+              label: main
+        # Encryption endpoints enabled (for encrypting values)
+        encrypt:
+          enabled: ${ENCRYPT_ENABLED:true}
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/wowcare}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8080/realms/wowcare/protocol/openid-connect/certs}
+
+# ==============================================================================
+# ENCRYPTION CONFIGURATION
+# ==============================================================================
+# Spring Cloud Config Server supports automatic encryption/decryption of
+# property values using {cipher} prefix. Configuration values are encrypted
+# at rest in Git and decrypted by Config Server before sending to clients.
+#
+# Symmetric Encryption (Development/QA): Uses single shared key
+# Asymmetric Encryption (Production): Uses public/private key pair
+#
+# Usage:
+#   1. Encrypt: curl -X POST http://localhost:8888/encrypt -d "plaintext"
+#   2. Returns: {cipher}AQA23AAC4AF35DF67B890...
+#   3. Use in config: password: '{cipher}AQA23AAC4AF35DF67B890...'
+#   4. Config Server automatically decrypts before sending to microservices
+# ==============================================================================
+encrypt:
+  # Symmetric encryption key (for dev/qa/uat/staging)
+  # Set via environment variable: export ENCRYPT_KEY="your-key-here"
+  # Generate key: ./scripts/generate-symmetric-key.sh
+  key: ${ENCRYPT_KEY:changeme-dev-key-insecure}
+  
+  # Asymmetric encryption with keystore (production)
+  # Uncomment and configure for production use
+  # key-store:
+  #   location: file:${KEYSTORE_PATH:/config/keystore/config-server.jks}
+  #   password: ${KEYSTORE_PASSWORD}
+  #   alias: config-server-key
+  #   secret: ${KEY_SECRET}
+  
+  # Fail-fast if encryption fails (recommended for production)
+  fail-on-error: ${ENCRYPT_FAIL_ON_ERROR:true}
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: ${EUREKA_REGISTER:true}
+    fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
+    registry-fetch-interval-seconds: 30
+    healthcheck:
+      enabled: true
+  instance:
+    hostname: ${HOSTNAME:localhost}
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    metadata-map:
+      management.context-path: ${management.endpoints.web.base-path:/actuator}
+      health.path: ${management.endpoints.web.base-path:/actuator}/health
+
+# Config Server Security Configuration
+config:
+  security:
+    enabled: true
+    admin-role: ADMIN
+    public-endpoints:
+      - /actuator/health
+      - /actuator/health/**
+      - /actuator/info
+      - /actuator/prometheus
+    cors:
+      enabled: false
+      allowed-origins:
+        - http://localhost:3000
+        - http://localhost:4200
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowed-headers:
+        - "*"
+      allow-credentials: true
+      max-age: 3600
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,refresh,configprops,env,beans
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: when-authorized
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState,ping
+          show-details: always
+        readiness:
+          include: readinessState,configServer,gitRepository,discoveryComposite
+          show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    tags:
+      application: ${spring.application.name}
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    defaults:
+      enabled: true
+    config:
+      enabled: true
+    circuitbreakers:
+      enabled: true
+    diskspace:
+      enabled: true
+      threshold: 10MB
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      configServer:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 60000
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+  retry:
+    instances:
+      configServer:
+        max-attempts: 3
+        wait-duration: 1000
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.config: DEBUG
+    org.springframework.security: DEBUG
+    com.atoconn: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/wowcare-config-server.log
+    max-size: 10MB
+    max-history: 30
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true
 
