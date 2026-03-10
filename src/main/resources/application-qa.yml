@@ -19,12 +19,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
-
-eureka:
-  client:
-    service-url:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:https://qa-wowcare.childcarewow.app/auth-service/realms/wowcare}
+            jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:https://qa-wowcare.childcarewow.app/auth-service/realms/wowcare/protocol/openid-connect/certs}
       defaultZone: ${EUREKA_SERVER_URL}
     register-with-eureka: true
     fetch-registry: true
