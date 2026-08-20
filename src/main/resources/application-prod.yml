@@ -22,20 +22,12 @@ spring:
           issuer-uri: ${KEYCLOAK_ISSUER_URI}
           jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
 
-# ==============================================================================
-# PRODUCTION ENCRYPTION - Asymmetric (Public/Private Key)
-# ==============================================================================
-# Uses Java Keystore (JKS) with RSA-4096 key pair for maximum security
-# Keystore should be stored in AWS Secrets Manager or secure volume mount
-# Generate keystore: ./scripts/generate-keystore.sh prod
-# ==============================================================================
-encrypt:
-  key-store:
-    location: file:${KEYSTORE_PATH:/config/keystore/config-server-prod.jks}
-    password: ${KEYSTORE_PASSWORD}
-    alias: ${KEYSTORE_ALIAS:config-server-key}
-    secret: ${KEY_SECRET:${KEYSTORE_PASSWORD}}
-  fail-on-error: true
+# NOTE: prod previously enabled asymmetric JKS keystore encryption pointing at
+# /config/keystore/config-server-prod.jks (an AWS-Secrets-Manager-era assumption).
+# That keystore does not exist on the Hetzner cluster and `fail-on-error: true`
+# aborted startup ("Invalid keystore location"). Aligned with application-uat.yml,
+# which uses no keystore (the config repo holds no {cipher} values). Re-introduce
+# only alongside a mounted keystore secret if config-value encryption is required.
 
 eureka:
   client:
