@@ -24,7 +24,9 @@
              springdoc 2.8.x, resilience4j 2.3.0 — required to clear the prod Trivy CRITICAL
              gate (spring-security CVE-2026-22732 needs 6.5.9, which needs Boot 3.5). -->
         <spring-cloud.version>2025.0.0</spring-cloud.version>
-        <resilience4j.version>2.3.0</resilience4j.version>
+        <!-- resilience4j version intentionally NOT pinned — let the Boot 3.5 BOM manage
+             all resilience4j modules to one consistent version (pinning only some caused
+             a spring6/framework-common mismatch -> ClassNotFoundException at startup). -->
         <springdoc.version>2.8.9</springdoc.version>
         <!-- Pin the exact patched versions the release gate requires (>= what Boot 3.5.5
              manages, same minor line so compatible):
@@ -80,19 +82,13 @@
         <!-- Resilience4j for circuit breaker and retry -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-spring-boot3</artifactId>
-            <version>${resilience4j.version}</version>
-        </dependency>
+            <artifactId>resilience4j-spring-boot3</artifactId>        </dependency>
         <dependency>
             <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-circuitbreaker</artifactId>
-            <version>${resilience4j.version}</version>
-        </dependency>
+            <artifactId>resilience4j-circuitbreaker</artifactId>        </dependency>
         <dependency>
             <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-retry</artifactId>
-            <version>${resilience4j.version}</version>
-        </dependency>
+            <artifactId>resilience4j-retry</artifactId>        </dependency>
 
         <!-- Lombok for reducing boilerplate code -->
         <dependency>
