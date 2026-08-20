@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.5.5</version>
         <relativePath/>
     </parent>
 
@@ -20,15 +20,18 @@
 
     <properties>
         <java.version>21</java.version>
-        <spring-cloud.version>2023.0.4</spring-cloud.version>
-        <resilience4j.version>2.2.0</resilience4j.version>
-        <springdoc.version>2.3.0</springdoc.version>
-        <!-- CVE remediation (prod release Trivy CRITICAL gate). Override the vulnerable
-             transitive versions pinned by the Boot 3.2.5 parent to their patched releases:
-             tomcat  CVE-2025-24813 (RCE)                -> 10.1.35
-             spring-security  CVE-2024-38821 (authz bypass) -> 6.2.7 -->
-        <tomcat.version>10.1.35</tomcat.version>
-        <spring-security.version>6.2.7</spring-security.version>
+        <!-- Spring Boot 3.5 line (upgraded from 3.2.5) + aligned Spring Cloud 2025.0.0,
+             springdoc 2.8.x, resilience4j 2.3.0 — required to clear the prod Trivy CRITICAL
+             gate (spring-security CVE-2026-22732 needs 6.5.9, which needs Boot 3.5). -->
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <resilience4j.version>2.3.0</resilience4j.version>
+        <springdoc.version>2.8.9</springdoc.version>
+        <!-- Pin the exact patched versions the release gate requires (>= what Boot 3.5.5
+             manages, same minor line so compatible):
+             tomcat           CVE-2025-24813 / CVE-2026-41293 -> 10.1.55
+             spring-security  CVE-2024-38821 / CVE-2026-22732 -> 6.5.9 -->
+        <tomcat.version>10.1.55</tomcat.version>
+        <spring-security.version>6.5.9</spring-security.version>
     </properties>
 
     <dependencies>
