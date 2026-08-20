@@ -23,6 +23,12 @@
         <spring-cloud.version>2023.0.4</spring-cloud.version>
         <resilience4j.version>2.2.0</resilience4j.version>
         <springdoc.version>2.3.0</springdoc.version>
+        <!-- CVE remediation (prod release Trivy CRITICAL gate). Override the vulnerable
+             transitive versions pinned by the Boot 3.2.5 parent to their patched releases:
+             tomcat  CVE-2025-24813 (RCE)                -> 10.1.35
+             spring-security  CVE-2024-38821 (authz bypass) -> 6.2.7 -->
+        <tomcat.version>10.1.35</tomcat.version>
+        <spring-security.version>6.2.7</spring-security.version>
     </properties>
 
     <dependencies>
@@ -131,9 +137,23 @@
 
     </dependencies>
 
-    <!-- Spring Cloud BOM -->
+    <!-- Spring Cloud BOM + CVE-remediation overrides.
+         Direct dependencyManagement entries take precedence over the imported BOM,
+         so these pin patched versions over what Boot/Spring-Cloud 2023.0.4 resolve:
+           spring-cloud-config-server  CVE-2026-40982 -> 4.3.3
+           bcprov-jdk18on              CVE-2025-14813 -> 1.80.2 -->
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-config-server</artifactId>
+                <version>4.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.80.2</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
