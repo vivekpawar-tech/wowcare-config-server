@@ -1,0 +1,12 @@
+# Reviewed Trivy ignore — approved by Vivek Pawar (CVE-2026-47884 + CVE-2026-47890, 2026-10-16).
+#
+# CVE-2026-47884 (CRITICAL, spring-webmvc 6.2.10): RCE via XsltView when a request can steer the
+# rendered view name. OSS fix is Spring Framework 7.0.9 (Boot 4); 6.2.x fix is commercial-only.
+# NOT REACHABLE: this is a Spring Cloud Config Server — no application @Controller, no XsltView, no
+# view resolvers, no templates/stylesheets (config is served as REST/property endpoints).
+# ViewRenderingReachabilityGuardTest enforces that. Expires 2027-01-06.
+CVE-2026-47884 exp:2027-01-06
+
+# CVE-2026-47890 (CRITICAL, spring-webmvc 6.2.10): SSE stream corruption from view fragments. Same
+# fix situation. NOT REACHABLE: no SSE emitters, view fragments, or text/event-stream endpoints.
+CVE-2026-47890 exp:2027-01-06
